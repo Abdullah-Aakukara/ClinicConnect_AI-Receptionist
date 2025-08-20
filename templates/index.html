@@ -37,7 +37,7 @@
                     <a href="#about" class="text-gray-700 hover:text-dental-blue transition duration-300 nav-link">About</a>
                     <a href="#contact" class="text-gray-700 hover:text-dental-blue transition duration-300 nav-link">Contact</a>
                 </div>
-                <button class="bg-dental-blue text-white px-6 py-2 rounded-full hover:bg-blue-700 transition duration-300 transform hover:scale-105 btn-appointment">
+                <button id="book-appointment" class="bg-dental-blue text-white px-6 py-2 rounded-full hover:bg-blue-700 transition duration-300 transform hover:scale-105 btn-appointment">
                     Book Appointment
                 </button>
                 <!-- Mobile menu button -->
@@ -66,7 +66,7 @@
                 <a href="#doctors" class="block text-gray-700 hover:text-dental-blue transition duration-300 py-2">Doctors</a>
                 <a href="#about" class="block text-gray-700 hover:text-dental-blue transition duration-300 py-2">About</a>
                 <a href="#contact" class="block text-gray-700 hover:text-dental-blue transition duration-300 py-2">Contact</a>
-                <button class="w-full bg-dental-blue text-white px-6 py-3 rounded-full hover:bg-blue-700 transition duration-300 mt-6">
+                <button id="book-appointment" class="w-full bg-dental-blue text-white px-6 py-3 rounded-full hover:bg-blue-700 transition duration-300 mt-6">
                     Book Appointment
                 </button>
             </div>
@@ -86,7 +86,7 @@
                         We use the latest technology to ensure your comfort and satisfaction.
                     </p>
                     <div class="flex flex-col sm:flex-row gap-4">
-                        <button class="bg-white text-dental-blue px-8 py-4 rounded-full text-lg font-semibold hover:bg-gray-100 transition duration-300 transform hover:scale-105 shadow-lg btn-appointment animate-pulse-slow">
+                        <button id="book-appointment" class="bg-white text-dental-blue px-8 py-4 rounded-full text-lg font-semibold hover:bg-gray-100 transition duration-300 transform hover:scale-105 shadow-lg btn-appointment animate-pulse-slow">
                             <i class="fas fa-calendar-check mr-2"></i>
                             Book an Appointment
                         </button>
@@ -190,7 +190,7 @@
             <h2 class="text-4xl font-bold mb-6">Ready to Transform Your Smile?</h2>
             <p class="text-xl mb-8 text-blue-100">Book your appointment today and take the first step towards a healthier, more beautiful smile.</p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <button class="bg-white text-dental-blue px-8 py-4 rounded-full text-lg font-semibold hover:bg-gray-100 transition duration-300 transform hover:scale-105 shadow-lg">
+                <button id="book-appointment" class="bg-white text-dental-blue px-8 py-4 rounded-full text-lg font-semibold hover:bg-gray-100 transition duration-300 transform hover:scale-105 shadow-lg">
                     <i class="fas fa-calendar-check mr-2"></i>
                     Book an Appointment
                 </button>
@@ -241,6 +241,50 @@
         </div>
     </footer>
 
+    <!-- AI Receptionist Modal -->
+    <div id="ai-modal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="ai-modal-title">
+        <div id="ai-modal-overlay" class="absolute inset-0 bg-black/60"></div>
+        <div class="relative mx-auto mt-24 max-w-2xl px-4">
+            <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+                <div class="flex items-center justify-between px-6 py-4 border-b">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-robot text-dental-blue text-xl"></i>
+                        <h3 id="ai-modal-title" class="text-xl font-semibold text-gray-800">AI Receptionist</h3>
+                    </div>
+                    <button id="ai-modal-close" class="text-gray-500 hover:text-dental-blue transition">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                <div class="px-6 py-6 space-y-6">
+                    <div class="text-gray-600">
+                        Start speaking to book your dental appointment. Please allow microphone access when prompted.
+                    </div>
+                    <div id="ai-status" class="flex items-center gap-3 text-gray-700 bg-soft-white rounded-xl p-4">
+                        <span class="inline-flex h-3 w-3 rounded-full bg-yellow-400"></span>
+                        <span id="ai-status-text" class="font-medium">Waiting for microphone permission…</span>
+                    </div>
+                    <div class="flex items-center justify-center">
+                        <button id="ai-mic-button" class="relative bg-dental-blue text-white w-20 h-20 rounded-full flex items-center justify-center shadow-lg hover:bg-blue-700 transition transform hover:scale-105">
+                            <i class="fas fa-microphone text-2xl"></i>
+                            <span class="sr-only">Toggle microphone</span>
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-between gap-4">
+                        <button id="ai-mute-button" class="flex-1 border-2 border-dental-blue text-dental-blue px-4 py-3 rounded-xl font-semibold hover:bg-dental-blue hover:text-white transition">
+                            <i class="fas fa-microphone-slash mr-2"></i> Mute
+                        </button>
+                        <button id="ai-end-button" class="flex-1 bg-dental-teal text-white px-4 py-3 rounded-xl font-semibold hover:bg-teal-700 transition">
+                            <i class="fas fa-circle-stop mr-2"></i> End Conversation
+                        </button>
+                    </div>
+                </div>
+                <div class="px-6 py-4 bg-gray-50 text-sm text-gray-600">
+                    Your voice may be processed to understand your request. Do not share sensitive information.
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Smooth scrolling script -->
     <script>
         // Smooth scrolling for navigation links
@@ -263,14 +307,168 @@
             }
         });
 
-        // Appointment booking functionality
-        document.querySelectorAll('button').forEach(button => {
-            if (button.textContent.includes('Book')) {
-                button.addEventListener('click', function() {
-                    alert('Thank you for choosing SmileCare! Our team will contact you soon to confirm your appointment.');
-                });
+        
+        
+
+// AI Receptionist Modal Logic
+(function() {
+    const modal = document.getElementById('ai-modal');
+    const overlay = document.getElementById('ai-modal-overlay');
+    const closeBtn = document.getElementById('ai-modal-close');
+    const micButton = document.getElementById('ai-mic-button');
+    const muteButton = document.getElementById('ai-mute-button');
+    const endButton = document.getElementById('ai-end-button');
+    const statusDot = document.querySelector('#ai-status span');
+    const statusText = document.getElementById('ai-status-text');
+
+    let mediaStream = null;
+    let isMuted = false;
+    // --- NEW: Add variables for our WebSocket and MediaRecorder ---
+    let socket = null;
+    let mediaRecorder = null;
+    // --- END NEW ---
+
+    function setStatus(state, text) {
+        const colors = {
+            waiting: 'bg-yellow-400',
+            listening: 'bg-green-500',
+            muted: 'bg-gray-400',
+            error: 'bg-red-500',
+            ended: 'bg-gray-400',
+            connecting: 'bg-blue-400', // Added a new state for connecting
+        };
+        statusDot.className = `inline-flex h-3 w-3 rounded-full ${colors[state] || 'bg-gray-400'}`;
+        statusText.textContent = text;
+    }
+
+    // --- NEW: Function to start streaming audio to the server ---
+    function startStreaming(stream) {
+        // 1. Create a new WebSocket connection.
+        socket = new WebSocket("ws://localhost:8000/ws");
+
+        // 2. When the connection opens...
+        socket.onopen = () => {
+            console.log("WebSocket connection opened.");
+            setStatus('listening', 'Listening… you can start speaking');
+            micButton.classList.add('animate-pulse-slow');
+
+            // 3. Use MediaRecorder to capture audio.
+            mediaRecorder = new MediaRecorder(stream);
+
+            // 4. When we get a chunk of audio, send it over the WebSocket.
+            mediaRecorder.ondataavailable = event => {
+                if (event.data.size > 0 && socket.readyState === WebSocket.OPEN) {
+                    socket.send(event.data);
+                }
+            };
+
+            // 5. Start recording, sending data every second.
+            mediaRecorder.start(1000);
+        };
+        
+        // Handle WebSocket errors.
+        socket.onerror = error => {
+            console.error("WebSocket error:", error);
+            setStatus('error', 'Connection to server failed.');
+        };
+
+        // Handle WebSocket closing.
+        socket.onclose = () => {
+            console.log("WebSocket connection closed.");
+            if (mediaRecorder) {
+                mediaRecorder.stop();
             }
+        };
+    }
+    // --- END NEW ---
+
+    async function openModalAndRequestMic() {
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+        setStatus('waiting', 'Requesting microphone permission…');
+        try {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                throw new Error('Microphone API not supported in this browser.');
+            }
+            mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            
+            // This is the integration point! Instead of just setting status,
+            // we will now start the streaming process.
+            setStatus('connecting', 'Microphone connected. Connecting to server...');
+            startStreaming(mediaStream); // <-- OUR NEW FUNCTION IS CALLED HERE
+
+            isMuted = false;
+            muteButton.innerHTML = '<i class="fas fa-microphone-slash mr-2"></i> Mute';
+            mediaStream.getAudioTracks().forEach(t => t.enabled = true);
+        } catch (err) {
+            console.error(err);
+            setStatus('error', 'Microphone access denied. Please enable it in your browser settings.');
+            micButton.classList.remove('animate-pulse-slow');
+        }
+    }
+
+    function closeModal() {
+        modal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+        
+        // --- MODIFIED: Ensure we stop the stream and close the socket ---
+        if (mediaStream) {
+            mediaStream.getTracks().forEach(t => t.stop());
+            mediaStream = null;
+        }
+        if (socket) {
+            socket.close();
+            socket = null;
+        }
+        if (mediaRecorder) {
+            mediaRecorder.stop();
+            mediaRecorder = null;
+        }
+        // --- END MODIFIED ---
+
+        setStatus('ended', 'Conversation ended');
+        micButton.classList.remove('animate-pulse-slow');
+    }
+
+    function toggleMute() {
+        if (!mediaStream) return;
+        isMuted = !isMuted;
+        mediaStream.getAudioTracks().forEach(t => t.enabled = !isMuted);
+        if (isMuted) {
+            setStatus('muted', 'Muted');
+            muteButton.innerHTML = '<i class="fas fa-microphone mr-2"></i> Unmute';
+            micButton.classList.remove('animate-pulse-slow');
+        } else {
+            // Only set to listening if the socket is actually connected
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                setStatus('listening', 'Listening… you can start speaking');
+            }
+            muteButton.innerHTML = '<i class="fas fa-microphone-slash mr-2"></i> Mute';
+            micButton.classList.add('animate-pulse-slow');
+        }
+    }
+
+    const bookButtons = document.querySelectorAll('#book-appointment, .btn-appointment');
+    bookButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            openModalAndRequestMic();
         });
-    </script>
+    });
+
+    overlay.addEventListener('click', closeModal);
+    closeBtn.addEventListener('click', closeModal);
+    endButton.addEventListener('click', closeModal);
+    muteButton.addEventListener('click', toggleMute);
+    // Let's not have the mic button also mute, as you have a dedicated mute button.
+    // micButton.addEventListener('click', toggleMute); 
+
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+            closeModal();
+        }
+    });
+})();    
+</script>
 </body>
 </html>

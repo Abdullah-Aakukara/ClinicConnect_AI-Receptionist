@@ -100,12 +100,6 @@ The website can be easily customized by:
 - Changing contact information
 - Customizing the appointment booking flow
 
-## 📞 Contact Information
-
-- **Phone**: (555) 123-4567
-- **Email**: info@smilecare.com
-- **Address**: 123 Dental Street, City, State
-
 ---
 
 Built with ❤️ for modern dental care experiences
