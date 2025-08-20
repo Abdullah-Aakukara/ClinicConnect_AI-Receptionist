@@ -1,0 +1,20 @@
+# Modern, high-performance web server
+fastapi
+
+# The server that runs our FastAPI app
+uvicorn[standard]
+
+# For making API calls
+requests
+
+# To connect to OpenAI's API
+openai
+
+# To manage our secret API keys
+python-dotenv
+
+# The official SDK for the hackathon
+portia-sdk-python
+
+# Template engine for HTML rendering
+jinja2

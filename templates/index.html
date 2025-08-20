@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmileCare Dental Clinic - Your Trusted Dental Care Partner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'dental-blue': '#1e40af',
+                        'dental-teal': '#0d9488',
+                        'soft-white': '#f8fafc'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/static/styles.css" rel="stylesheet">
+</head>
+<body class="bg-soft-white">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg fixed w-full z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <i class="fas fa-tooth text-dental-blue text-3xl mr-3"></i>
+                    <span class="text-2xl font-bold text-dental-blue">SmileCare</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#home" class="text-gray-700 hover:text-dental-blue transition duration-300 nav-link">Home</a>
+                    <a href="#services" class="text-gray-700 hover:text-dental-blue transition duration-300 nav-link">Services</a>
+                    <a href="#doctors" class="text-gray-700 hover:text-dental-blue transition duration-300 nav-link">Doctors</a>
+                    <a href="#about" class="text-gray-700 hover:text-dental-blue transition duration-300 nav-link">About</a>
+                    <a href="#contact" class="text-gray-700 hover:text-dental-blue transition duration-300 nav-link">Contact</a>
+                </div>
+                <button class="bg-dental-blue text-white px-6 py-2 rounded-full hover:bg-blue-700 transition duration-300 transform hover:scale-105 btn-appointment">
+                    Book Appointment
+                </button>
+                <!-- Mobile menu button -->
+                <button class="md:hidden text-gray-700 hover:text-dental-blue transition duration-300" id="mobile-menu-btn">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" id="mobile-menu">
+        <div class="bg-white w-64 h-full p-6">
+            <div class="flex justify-between items-center mb-8">
+                <div class="flex items-center">
+                    <i class="fas fa-tooth text-dental-blue text-2xl mr-3"></i>
+                    <span class="text-xl font-bold text-dental-blue">SmileCare</span>
+                </div>
+                <button class="text-gray-500 hover:text-dental-blue" id="close-mobile-menu">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <a href="#home" class="block text-gray-700 hover:text-dental-blue transition duration-300 py-2">Home</a>
+                <a href="#services" class="block text-gray-700 hover:text-dental-blue transition duration-300 py-2">Services</a>
+                <a href="#doctors" class="block text-gray-700 hover:text-dental-blue transition duration-300 py-2">Doctors</a>
+                <a href="#about" class="block text-gray-700 hover:text-dental-blue transition duration-300 py-2">About</a>
+                <a href="#contact" class="block text-gray-700 hover:text-dental-blue transition duration-300 py-2">Contact</a>
+                <button class="w-full bg-dental-blue text-white px-6 py-3 rounded-full hover:bg-blue-700 transition duration-300 mt-6">
+                    Book Appointment
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section id="home" class="pt-20 hero-gradient text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h1 class="text-5xl md:text-6xl font-bold mb-6 leading-tight">
+                        Your Perfect Smile Starts Here
+                    </h1>
+                    <p class="text-xl mb-8 text-blue-100">
+                        Experience world-class dental care with our team of expert dentists. 
+                        We use the latest technology to ensure your comfort and satisfaction.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <button class="bg-white text-dental-blue px-8 py-4 rounded-full text-lg font-semibold hover:bg-gray-100 transition duration-300 transform hover:scale-105 shadow-lg btn-appointment animate-pulse-slow">
+                            <i class="fas fa-calendar-check mr-2"></i>
+                            Book an Appointment
+                        </button>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-8 animate-float">
+                        <i class="fas fa-tooth text-8xl text-white mb-4"></i>
+                        <h3 class="text-2xl font-semibold mb-2">Modern Dental Care</h3>
+                        <p class="text-blue-100">State-of-the-art facilities for your comfort</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-800 mb-4">Our Services</h2>
+                <p class="text-xl text-gray-600">Comprehensive dental care for you and your family</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-soft-white p-8 rounded-2xl hover:shadow-xl transition duration-300 transform hover:-translate-y-2 service-card animate-fade-in-up">
+                    <div class="bg-dental-blue w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-teeth text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-4 text-gray-800">General Dentistry</h3>
+                    <p class="text-gray-600 mb-6">Comprehensive dental checkups, cleanings, and preventive care to maintain your oral health.</p>
+                    <button class="text-dental-blue font-semibold hover:underline">Learn More →</button>
+                </div>
+                <div class="bg-soft-white p-8 rounded-2xl hover:shadow-xl transition duration-300 transform hover:-translate-y-2 service-card animate-fade-in-up" style="animation-delay: 0.2s;">
+                    <div class="bg-dental-teal w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-star text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-4 text-gray-800">Cosmetic Dentistry</h3>
+                    <p class="text-gray-600 mb-6">Transform your smile with our advanced cosmetic procedures including whitening and veneers.</p>
+                    <button class="text-dental-teal font-semibold hover:underline">Learn More →</button>
+                </div>
+                <div class="bg-soft-white p-8 rounded-2xl hover:shadow-xl transition duration-300 transform hover:-translate-y-2 service-card animate-fade-in-up" style="animation-delay: 0.4s;">
+                    <div class="bg-dental-blue w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-implant text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-4 text-gray-800">Dental Implants</h3>
+                    <p class="text-gray-600 mb-6">Permanent tooth replacement solutions with the latest implant technology and techniques.</p>
+                    <button class="text-dental-blue font-semibold hover:underline">Learn More →</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Doctors Section -->
+    <section id="doctors" class="py-20 bg-soft-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-800 mb-4">Meet Our Expert Team</h2>
+                <p class="text-xl text-gray-600">Experienced professionals dedicated to your dental health</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-white p-8 rounded-2xl text-center shadow-lg hover:shadow-xl transition duration-300 doctor-profile animate-fade-in-up">
+                    <div class="w-32 h-32 bg-gradient-to-br from-dental-blue to-dental-teal rounded-full mx-auto mb-6 flex items-center justify-center">
+                        <i class="fas fa-user-md text-white text-4xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-2 text-gray-800">Dr. Sarah Johnson</h3>
+                    <p class="text-dental-blue font-semibold mb-4">General Dentist</p>
+                    <p class="text-gray-600 mb-6">15+ years of experience in comprehensive dental care</p>
+                    <button class="bg-dental-blue text-white px-6 py-2 rounded-full hover:bg-blue-700 transition duration-300">
+                        Book with Dr. Johnson
+                    </button>
+                </div>
+                <div class="bg-white p-8 rounded-2xl text-center shadow-lg hover:shadow-xl transition duration-300 doctor-profile animate-fade-in-up" style="animation-delay: 0.2s;">
+                    <div class="w-32 h-32 bg-gradient-to-br from-dental-teal to-dental-blue rounded-full mx-auto mb-6 flex items-center justify-center">
+                        <i class="fas fa-user-md text-white text-4xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-2 text-gray-800">Dr. Michael Chen</h3>
+                    <p class="text-dental-teal font-semibold mb-4">Orthodontist</p>
+                    <p class="text-gray-600 mb-6">Specialist in braces and smile alignment</p>
+                    <button class="bg-dental-teal text-white px-6 py-2 rounded-full hover:bg-teal-700 transition duration-300">
+                        Book with Dr. Chen
+                    </button>
+                </div>
+                <div class="bg-white p-8 rounded-2xl text-center shadow-lg hover:shadow-xl transition duration-300 doctor-profile animate-fade-in-up" style="animation-delay: 0.4s;">
+                    <div class="w-32 h-32 bg-gradient-to-br from-dental-blue to-dental-teal rounded-full mx-auto mb-6 flex items-center justify-center">
+                        <i class="fas fa-user-md text-white text-4xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-2 text-gray-800">Dr. Emily Rodriguez</h3>
+                    <p class="text-dental-blue font-semibold mb-4">Pediatric Dentist</p>
+                    <p class="text-gray-600 mb-6">Making dental visits fun for children</p>
+                    <button class="bg-dental-blue text-white px-6 py-2 rounded-full hover:bg-blue-700 transition duration-300">
+                        Book with Dr. Rodriguez
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 bg-gradient-to-r from-dental-blue to-dental-teal text-white">
+        <div class="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+            <h2 class="text-4xl font-bold mb-6">Ready to Transform Your Smile?</h2>
+            <p class="text-xl mb-8 text-blue-100">Book your appointment today and take the first step towards a healthier, more beautiful smile.</p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button class="bg-white text-dental-blue px-8 py-4 rounded-full text-lg font-semibold hover:bg-gray-100 transition duration-300 transform hover:scale-105 shadow-lg">
+                    <i class="fas fa-calendar-check mr-2"></i>
+                    Book an Appointment
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-tooth text-dental-blue text-2xl mr-3"></i>
+                        <span class="text-xl font-bold">SmileCare</span>
+                    </div>
+                    <p class="text-gray-300">Your trusted partner for comprehensive dental care and beautiful smiles.</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2 text-gray-300">
+                        <li><a href="#home" class="hover:text-white transition duration-300">Home</a></li>
+                        <li><a href="#services" class="hover:text-white transition duration-300">Services</a></li>
+                        <li><a href="#doctors" class="hover:text-white transition duration-300">Doctors</a></li>
+                        <li><a href="#about" class="hover:text-white transition duration-300">About</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Services</h3>
+                    <ul class="space-y-2 text-gray-300">
+                        <li>General Dentistry</li>
+                        <li>Cosmetic Dentistry</li>
+                        <li>Dental Implants</li>
+                        <li>Orthodontics</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Contact Info</h3>
+                    <div class="space-y-2 text-gray-300">
+                        <p><i class="fas fa-map-marker-alt mr-2"></i> 123 Dental Street, City, State</p>
+                        <p><i class="fas fa-envelope mr-2"></i> info@smilecare.com</p>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-300">
+                <p>&copy; 2024 SmileCare Dental Clinic. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Smooth scrolling script -->
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Add scroll effect to navigation
+        window.addEventListener('scroll', function() {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 100) {
+                nav.classList.add('bg-white/95', 'backdrop-blur-sm');
+            } else {
+                nav.classList.remove('bg-white/95', 'backdrop-blur-sm');
+            }
+        });
+
+        // Appointment booking functionality
+        document.querySelectorAll('button').forEach(button => {
+            if (button.textContent.includes('Book')) {
+                button.addEventListener('click', function() {
+                    alert('Thank you for choosing SmileCare! Our team will contact you soon to confirm your appointment.');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
