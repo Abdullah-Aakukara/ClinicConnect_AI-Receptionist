@@ -1,0 +1,88 @@
+# main.py
+
+import os
+import uuid
+import time # Import the time library
+from fastapi import FastAPI, WebSocket, Request
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
+import uvicorn
+from dotenv import load_dotenv
+import openai
+
+# --- 1. Load Environment Variables & Initialize OpenAI Client ---
+load_dotenv()
+print("✅ API keys loaded successfully.")
+client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+
+# --- 2. Create FastAPI App Instance ---
+app = FastAPI()
+templates = Jinja2Templates(directory="templates")
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+# --- 3. HTTP Routes ---
+@app.get("/")
+async def root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+
+# --- 4. WebSocket Endpoint with Audio Buffering ---
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    print("✅ WebSocket connection established.")
+    
+    # --- NEW: Buffering Logic ---
+    audio_buffer = []
+    last_transcription_time = time.time()
+    TRANSCRIPTION_INTERVAL = 4.0 # Transcribe every 4 seconds
+    
+    try:
+        while True:
+            audio_data = await websocket.receive_bytes()
+            audio_buffer.append(audio_data) # Add the incoming audio to our buffer
+
+            current_time = time.time()
+            # Check if it's time to transcribe (4 seconds have passed)
+            if current_time - last_transcription_time > TRANSCRIPTION_INTERVAL:
+                
+                # Join all the small chunks in the buffer into one big chunk
+                full_audio_data = b"".join(audio_buffer)
+                audio_buffer = [] # Clear the buffer for the next round
+                last_transcription_time = current_time # Reset the timer
+
+                # If there's actually audio data to process
+                if len(full_audio_data) > 1000: # A small threshold to avoid processing silence
+                    temp_audio_path = f"temp_audio_{uuid.uuid4()}.webm"
+                    with open(temp_audio_path, "wb") as f:
+                        f.write(full_audio_data)
+
+                    try:
+                        with open(temp_audio_path, "rb") as audio_file:
+                            transcript = client.audio.transcriptions.create(
+                                model="whisper-1",
+                                file=audio_file,
+                                response_format="text"
+                            )
+                        
+                        print(f"🎤 Transcription: '{transcript.strip()}'")
+                        await websocket.send_text(f"I heard you say: '{transcript.strip()}'")
+
+                    except Exception as e:
+                        print(f"🔴 Error during transcription: {e}")
+                    finally:
+                        if os.path.exists(temp_audio_path):
+                            os.remove(temp_audio_path)
+
+    except Exception as e:
+        print(f"🔴 WebSocket error: {e}")
+    finally:
+        print("🔌 WebSocket connection closed.")
+
+
+# --- 5. Main Entry Point ---
+if __name__ == "__main__":
+    print("🚀 Starting ClinicConnect server...")
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
