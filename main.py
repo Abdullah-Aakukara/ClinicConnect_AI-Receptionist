@@ -2,166 +2,119 @@
 
 import os
 import asyncio
-import json
-import shutil
-import uuid
-import time
-import requests
 from fastapi import FastAPI, WebSocket, Request
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 from dotenv import load_dotenv
 
-# --- NEW: Import Deepgram SDK ---
-from deepgram import (
-    DeepgramClient,
-    DeepgramClientOptions,
-    LiveTranscriptionEvents,
-    LiveOptions,
-)
+# --- Import SDKs ---
+from deepgram import DeepgramClient, DeepgramClientOptions, LiveTranscriptionEvents, LiveOptions
+from portia import Portia, Config
+from elevenlabs.client import ElevenLabs
+from elevenlabs import VoiceSettings
+from google.generativeai import GenerativeModel
 
 # --- 1. Load Environment Variables ---
 load_dotenv()
 DEEPGRAM_API_KEY = os.getenv("DEEPGRAM_API_KEY")
-PORTIA_API_URL = os.getenv("PORTIA_API_URL")  # e.g., https://api.portia.ai/v1/ingest
-PORTIA_API_KEY = os.getenv("PORTIA_API_KEY")
+ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
+elevenlabs = ElevenLabs(
+  api_key='ELEVENLABS_API_KEY',
+)
 
-# --- 2. Create FastAPI App Instance ---
+# --- 2. Create FastAPI App & Templates ---
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-
-# --- 3. HTTP Route for the Frontend ---
+# --- 3. Create the Agent Configuration (The Correct Way) ---
+# The documentation you found shows all settings go inside this Config object.
+config = Config(
+    llm_provider="google",
+    model="gemini-1.5-flash",
+    system_prompt=(
+        "You are a friendly, expert AI receptionist for a dental clinic named Smile Care. "
+        "Your primary goal is to help patients book appointments. "
+        "You are conversational and helpful. Keep your responses concise and natural."
+    )
+)
+# --- 4. HTTP Route for the Frontend ---
 @app.get("/")
 async def root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+# --- 4. Initialize AI Services ---
+agent = Portia(config=config)
+elevenlabs_client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
+print("✅ Portia and ElevenLabs clients initialized correctly.")
 
-# --- 4. WebSocket Endpoint with Real-time Streaming STT ---
+
+# --- 5. Background Task for AI Processing ---
+async def process_agent_response(transcript: str, websocket: WebSocket):
+    try:
+        await websocket.send_json({"action": "play_thinking_audio"})
+        print(f"🎤 User said: '{transcript}'")
+        print("🧠 Agent is thinking...")
+
+        # --- THE FIX: Use agent.run() with only the transcript ---
+        # The Config object already contains all the agent's instructions.
+        agent_run_result = await asyncio.to_thread(
+            agent.run,
+            transcript
+        )      
+         # --- 2. Extract the final_output from the result object ---
+        agent_response_text = agent_run_result.outputs.final_output.get_value()
+        print(f"🤖 Agent responded with text: '{agent_response_text}'")
+        
+
+        # --- Stream the response as audio with ElevenLabs ---
+        audio_stream = elevenlabs.text_to_speech.stream(
+            text=agent_response_text,
+            model_id="eleven_flash_v2_5",
+            voice_id="RXe6OFmxoC0nlSWpuCDy",
+            voice_settings=VoiceSettings(
+            stability=6,
+            similarity_boost=7.5,
+            style=0.0,
+            use_speaker_boost=True,
+            speed=0.93,
+        )
+        )
+        
+        for chunk in audio_stream:
+            if chunk:
+                await websocket.send_bytes(chunk)
+        
+        await websocket.send_json({"action": "end_of_ai_audio"})
+
+    except Exception as e:
+        print(f"🔴 ERROR during agent run or TTS: {e}")
+        await websocket.send_text("Sorry, I'm having a technical issue. Please try again.")
+
+
+# --- 6. Main WebSocket Endpoint ---
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     print("✅ WebSocket connection established.")
-
     try:
-        loop = asyncio.get_running_loop()
-        session_id = str(uuid.uuid4())
-        transcript_queue: asyncio.Queue = asyncio.Queue()
-        # --- NEW: Setup Deepgram Connection ---
-        config = DeepgramClientOptions(
-            verbose=1 # Increase logging for diagnostics
-        )
-        deepgram: DeepgramClient = DeepgramClient(DEEPGRAM_API_KEY, config)
-
+        deepgram_config = DeepgramClientOptions(verbose=0)
+        deepgram: DeepgramClient = DeepgramClient(DEEPGRAM_API_KEY, deepgram_config)
         dg_connection = deepgram.listen.asynclive.v("1")
 
-        # Function to handle incoming transcripts from Deepgram
-        # Use a synchronous callback and schedule WebSocket sends on the event loop
-        def on_message(self, result, **kwargs):
-            try:
-                transcript = None
-                is_final = False
-                if hasattr(result, "channel"):
-                    transcript = result.channel.alternatives[0].transcript
-                    is_final = getattr(result, "is_final", False)
-                elif isinstance(result, dict):
-                    transcript = result.get("channel", {}).get("alternatives", [{}])[0].get("transcript")
-                    is_final = result.get("is_final", False)
-
-                if transcript:
-                    print(f"🎤 Transcription ({'final' if is_final else 'interim'}): '{transcript}'")
-                    # Enqueue for Portia; do not send back to the browser
-                    asyncio.run_coroutine_threadsafe(
-                        transcript_queue.put((transcript, bool(is_final))),
-                        loop,
-                    )
-            except Exception as err:
-                print(f"⚠️ Transcript handler error: {err}")
+        async def on_message(self, result, **kwargs):
+            transcript = result.channel.alternatives[0].transcript
+            if len(transcript) > 0:
+                asyncio.create_task(process_agent_response(transcript, websocket))
 
         dg_connection.on(LiveTranscriptionEvents.Transcript, on_message)
-
-        # Optional: log Deepgram lifecycle and errors for easier debugging
-        def on_open(self, open, **kwargs):
-            print("🔊 Deepgram stream opened.")
-
-        def on_error(self, error, **kwargs):
-            print(f"🛑 Deepgram error event: {error}")
-
-        def on_close(self, close, **kwargs):
-            print("🔇 Deepgram stream closed.")
-
-        def on_utterance_end(self, end, **kwargs):
-            print("✅ Utterance ended (pause detected).")
-
-        dg_connection.on(LiveTranscriptionEvents.Open, on_open)
-        dg_connection.on(LiveTranscriptionEvents.Error, on_error)
-        dg_connection.on(LiveTranscriptionEvents.Close, on_close)
-        dg_connection.on(LiveTranscriptionEvents.UtteranceEnd, on_utterance_end)
-        
-        # Configure Deepgram options for real-time voice
-        # Transcode incoming Ogg/WebM Opus -> 16k PCM for maximum compatibility
-        options = LiveOptions(
-            model="nova-2",
-            language="en-US",
-            smart_format=True,
-            interim_results=True,
-            vad_events=True,
-            endpointing=300,
-            encoding="linear16",
-            sample_rate=16000,
-            channels=1,
-        )
-
+        options = LiveOptions(model="nova-2", language="en-US", smart_format=True)
         await dg_connection.start(options)
-        print("✅ Deepgram connection established and listening.")
 
-        # --- Background task to forward transcripts to Portia efficiently ---
-        portia_enabled = bool(PORTIA_API_URL and PORTIA_API_KEY)
-        warned_portia = False
-
-        def _post_to_portia(text: str, is_final: bool):
-            headers = {
-                "Authorization": f"Bearer {PORTIA_API_KEY}",
-                "Content-Type": "application/json",
-            }
-            payload = {
-                "session_id": session_id,
-                "text": text,
-                "final": is_final,
-                "timestamp_ms": int(time.time() * 1000),
-            }
-            try:
-                resp = requests.post(PORTIA_API_URL, headers=headers, json=payload, timeout=5)
-                return resp.status_code
-            except Exception as e:
-                print(f"⚠️ Portia POST failed: {e}")
-                return None
-
-        async def portia_worker():
-            nonlocal warned_portia
-            if not portia_enabled and not warned_portia:
-                print("ℹ️ PORTIA_API_URL or PORTIA_API_KEY not set; skipping Portia forwarding.")
-                warned_portia = True
-            while True:
-                text, is_final = await transcript_queue.get()
-                try:
-                    if portia_enabled:
-                        await loop.run_in_executor(None, _post_to_portia, text, is_final)
-                finally:
-                    transcript_queue.task_done()
-
-        portia_task = asyncio.create_task(portia_worker())
-
-        # --- Receive PCM bytes from frontend and forward to Deepgram
-        chunk_idx = 0
         while True:
-            data = await websocket.receive_bytes()
-            if chunk_idx % 20 == 0:
-                print(f"➡️ Received PCM chunk: {len(data)} bytes (#{chunk_idx})")
-            chunk_idx += 1
-            await dg_connection.send(data)
+            audio_data = await websocket.receive_bytes()
+            await dg_connection.send(audio_data)
 
     except Exception as e:
         print(f"🔴 WebSocket or Deepgram error: {e}")
@@ -169,9 +122,9 @@ async def websocket_endpoint(websocket: WebSocket):
         print("🔌 WebSocket connection closed.")
         if 'dg_connection' in locals() and dg_connection:
             await dg_connection.finish()
+            
 
-
-# --- 5. Main Entry Point ---
+# --- 7. Main Entry Point ---
 if __name__ == "__main__":
     print("🚀 Starting ClinicConnect server...")
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

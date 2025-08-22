@@ -1,23 +1,11 @@
-# Modern, high-performance web server
+# requirements.txt
+portia-sdk-python[google]
 fastapi
-
-# The server that runs our FastAPI app
 uvicorn[standard]
-
-# For making API calls
-requests
-
-# To connect to OpenAI's API
-openai
-
-# To manage our secret API keys
 python-dotenv
-
-# The official SDK for the hackathon
-portia-sdk-python
-
-# Template engine for HTML rendering
-jinja2
-
-# The official SDK of DeepGram for STT
 deepgram-sdk
+elevenlabs
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
+google-generativeai
